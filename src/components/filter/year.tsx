@@ -26,6 +26,10 @@ const Year: FC = () => {
     } else {
       newSearchParams.delete('year');
     }
+    
+    // Reset page to 1 when filters change
+    newSearchParams.set('page', '1');
+    
     setSearchParams(newSearchParams);
     
     // Update context filters

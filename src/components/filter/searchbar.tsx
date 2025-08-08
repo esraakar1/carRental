@@ -26,6 +26,9 @@ const Searchbar: FC = () => {
     if (selectedMake) newSearchParams.set('make', selectedMake);
     if (modelInput) newSearchParams.set('model', modelInput);
     
+    // Reset page to 1 when filters change
+    newSearchParams.set('page', '1');
+    
     setSearchParams(newSearchParams);
     
     // Update context filters

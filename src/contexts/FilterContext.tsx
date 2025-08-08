@@ -48,7 +48,11 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
       model: '',
       year: ''
     });
-    setSearchParams({});
+    
+    // Reset page to 1 when filters are cleared
+    const newSearchParams = new URLSearchParams();
+    newSearchParams.set('page', '1');
+    setSearchParams(newSearchParams);
   };
 
   return (

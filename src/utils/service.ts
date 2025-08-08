@@ -9,6 +9,7 @@ type FilterParams = {
     make?: string;
     model?: string;
     year?: string;
+    offset?: number;
     limit?: number;
 };
 
@@ -19,7 +20,13 @@ export const fetchCars = async (filters?: FilterParams): Promise<ReturnType> => 
     const baseUrl = "https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/all-vehicles-model/records";
     
     const params = new URLSearchParams();
-    params.append('limit', filters?.limit?.toString() || '9');
+    
+    // Pagination için offset ve limit ekle
+    const limit = filters?.limit || 9;
+    const offset = filters?.offset || 0;
+    
+    params.append('limit', limit.toString());
+    params.append('offset', offset.toString());
     
     if (filters?.make) {
         params.append('refine', `make:${filters.make}`);
@@ -49,6 +56,6 @@ export const fetchCars = async (filters?: FilterParams): Promise<ReturnType> => 
     
     return {
         results,
-        total_count: results.length
+        total_count: data.total_count || results.length
     };
 };

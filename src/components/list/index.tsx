@@ -5,15 +5,19 @@ import Warning from "../warning";
 import Card from "./card";
 import { useFilters } from "../../contexts/FilterContext";
 import ReactPaginate from "react-paginate";
+import { useSearchParams } from "react-router-dom";
 
 const List: FC = () => {
   const { filters } = useFilters();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [cars, setCars] = useState<Car[] | null>(null);
   const [total, setTotal] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  console.log(total);
+  
+  // Pagination state
+  const currentPage = parseInt(searchParams.get('page') || '1');
+  const itemsPerPage = 21;
 
   useEffect(() => {
     const loadCars = async () => {
@@ -22,7 +26,11 @@ const List: FC = () => {
       
       try {
         // Sadece dolu filtreleri API'ye gönder
-        const activeFilters: any = {};
+        const activeFilters: any = {
+          limit: itemsPerPage,
+          offset: (currentPage - 1) * itemsPerPage
+        };
+        
         if (filters.make) activeFilters.make = filters.make;
         if (filters.year) activeFilters.year = filters.year;
         if (filters.model) activeFilters.model = filters.model;
@@ -38,13 +46,20 @@ const List: FC = () => {
     };
 
     loadCars();
-  }, [filters]); // filters değiştiğinde yeniden yükle
+  }, [filters, currentPage]); // filters veya currentPage değiştiğinde yeniden yükle
     
   if (loading) return <Warning>Yükleniyor...</Warning>;
 
   if (error) return <Warning>{error}</Warning>;
 
   if (!cars || cars.length < 1) return <Warning>Veri Bulunamadı</Warning>;
+
+  const handlePageChange = (selectedItem: { selected: number }) => {
+    const newPage = selectedItem.selected + 1;
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('page', newPage.toString());
+    setSearchParams(newSearchParams);
+  };
 
   return (
     <div className="padding-x max-width">
@@ -64,19 +79,22 @@ const List: FC = () => {
           <Card key={car.id} car={car}/>
         ))}
       </section>
-
-      {total && (
+      
+      {total && total > itemsPerPage && (
         <ReactPaginate
           breakLabel="..."
           nextLabel=">"
           previousLabel="<"
-          initialPage={(parseInt(page) || 1) - 1}
-          onPageChange={(e) => {
-          }}
-          pageCount={Math.ceil(total / 10)}
+          pageCount={Math.ceil(total / itemsPerPage)}
           pageRangeDisplayed={5}
+          marginPagesDisplayed={2}
+          onPageChange={handlePageChange}
+          forcePage={currentPage - 1}
           renderOnZeroPageCount={null}
           containerClassName="pagination"
+          activeClassName="selected"
+          previousClassName="previous"
+          nextClassName="next"
         />
       )}
     </div>
